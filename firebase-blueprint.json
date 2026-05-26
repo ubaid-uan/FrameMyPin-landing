@@ -1,0 +1,42 @@
+{
+  "entities": {
+    "WaitlistEntry": {
+      "title": "Waitlist Entry",
+      "description": "An email address of a person who wants early access.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "User's email address"
+        },
+        "planIntent": {
+          "type": "string",
+          "enum": ["free", "paid", "paid_backup"],
+          "description": "The waitlist plan tier choice"
+        }
+      },
+      "required": ["email", "planIntent"]
+    }
+  },
+  "firestore": {
+    "waitlist_free": {
+      "schema": {
+        "$ref": "#/entities/WaitlistEntry"
+      },
+      "description": "Stores emails for free waitlist"
+    },
+    "waitlist_paid": {
+      "schema": {
+        "$ref": "#/entities/WaitlistEntry"
+      },
+      "description": "Stores emails for paid waitlist"
+    },
+    "waitlist_paid_backup": {
+      "schema": {
+        "$ref": "#/entities/WaitlistEntry"
+      },
+      "description": "Stores emails for paid backup waitlist"
+    }
+  }
+}

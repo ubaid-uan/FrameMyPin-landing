@@ -1,0 +1,2370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FrameMyPin - AI-Powered Pinterest Automation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0A0A0A;
+      --text: #FFFFFF;
+      --red: #E3000F;
+      --dark-red: #660008;
+      --gray: #999999;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    #bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+    #page {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+    }
+    section {
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      margin: 0 auto;
+      padding: 120px 24px;
+      /* Background for readable text over 3D */
+      background: rgba(10, 10, 10, 0.4);
+      backdrop-filter: blur(2px);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .content-container {
+      max-width: 680px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    /* Specific section styling */
+    #s1 {
+      min-height: 100vh;
+      text-align: center;
+      background: transparent;
+      backdrop-filter: none;
+    }
+    #s2, #s3 {
+      background: rgba(10, 10, 10, 0.65);
+    }
+    #s4 {
+      min-height: 100vh;
+      text-align: center;
+      background: transparent;
+      backdrop-filter: none;
+    }
+
+    /* Typography */
+    h1, h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-weight: 400;
+      line-height: 1.05;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    .hero-logo-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .hero-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 32px;
+      line-height: 1;
+      letter-spacing: 0.1em;
+      color: white;
+      margin-bottom: 0;
+      display: block;
+      transform: translateY(3px);
+    }
+    .highlight-red {
+      position: relative;
+      display: inline-block;
+      white-space: nowrap;
+      z-index: 1;
+      padding: 0 4px;
+      color: white;
+      font-weight: bold;
+    }
+    .highlight-red::before {
+      content: "";
+      position: absolute;
+      top: 15%;
+      left: 0;
+      width: 100%;
+      height: 70%;
+      background: var(--red);
+      z-index: -1;
+      transform: rotate(-3deg);
+      border-radius: 2px;
+    }
+    h1 {
+      font-size: 88px;
+      margin-bottom: 24px;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    @media (max-width: 768px) {
+      h1 { font-size: 52px; }
+    }
+    .sub-hero {
+      font-size: 18px;
+      color: var(--gray);
+      max-width: 520px;
+      margin: 0 auto 40px auto;
+      line-height: 1.6;
+    }
+    h2 {
+      font-size: 56px;
+      margin-bottom: 40px;
+    }
+
+    /* Form */
+    .email-form {
+      display: flex;
+      gap: 12px;
+      max-width: 480px;
+      margin: 0 auto;
+      background: rgba(255,255,255,0.05);
+      padding: 8px;
+      border-radius: 50px;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+    @media (max-width: 480px) {
+      .email-form {
+        flex-direction: column;
+        border-radius: 20px;
+        background: transparent;
+        border: none;
+        padding: 0;
+        box-shadow: none;
+      }
+      .email-form input, .email-form button {
+        border-radius: 50px !important;
+      }
+    }
+    .email-form input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 16px 24px;
+      color: white;
+      font-size: 16px;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+    }
+    .email-form input::placeholder {
+      color: rgba(255,255,255,0.4);
+    }
+    .email-form input:-webkit-autofill,
+    .email-form input:-webkit-autofill:hover, 
+    .email-form input:-webkit-autofill:focus, 
+    .email-form input:-webkit-autofill:active {
+      transition: background-color 5000s ease-in-out 0s;
+      -webkit-text-fill-color: white !important;
+    }
+    .email-form button {
+      background: var(--red);
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 50px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .email-form button:hover {
+      background: #FF0015;
+      transform: translateY(-1px);
+    }
+
+    /* Waitlist text */
+    .waitlist-count {
+      display: block;
+      margin-top: 24px;
+      font-size: 14px;
+      color: var(--gray);
+      text-align: center;
+      line-height: 1.5;
+    }
+    
+    .form-container {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .success-card {
+      display: none;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 40px 32px;
+      text-align: center;
+      animation: fadeIn 0.5s ease-out;
+      backdrop-filter: blur(10px);
+    }
+    .success-card.active {
+      display: block;
+    }
+    .success-icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+      animation: bounce 2s infinite;
+    }
+    .success-title {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+    .success-desc {
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+    .pos-num {
+      color: var(--red);
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* Steps */
+    .step-item {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 40px;
+      align-items: flex-start;
+      background: rgba(255,255,255,0.03);
+      padding: 32px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .step-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 48px;
+      color: var(--red);
+      line-height: 1;
+    }
+    .step-text h3 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    .step-text p {
+      color: var(--gray);
+      line-height: 1.6;
+    }
+
+    /* Features */
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 600px) {
+      .features-grid { grid-template-columns: 1fr; }
+    }
+    .feature-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 32px;
+    }
+    .feature-card h3 {
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+    .feature-card p {
+      color: var(--gray);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* Pricing */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      margin-top: 40px;
+    }
+    @media (max-width: 768px) {
+      .pricing-grid { grid-template-columns: 1fr; }
+    }
+    .pricing-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 20px;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      text-align: left;
+    }
+    .pricing-card.pro {
+      border-color: var(--red);
+      background: rgba(227, 0, 15, 0.05);
+      box-shadow: 0 0 40px rgba(227, 0, 15, 0.1);
+    }
+    .pricing-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--red);
+      color: white;
+      padding: 4px 16px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .pricing-tier {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 32px;
+      margin-bottom: 8px;
+      letter-spacing: 0.05em;
+    }
+    .pricing-price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 64px;
+      color: white;
+      margin-bottom: 8px;
+      line-height: 1;
+    }
+    .pricing-price span {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      color: var(--gray);
+    }
+    .pricing-features {
+      margin-top: 32px;
+      list-style: none;
+      flex: 1;
+    }
+    .pricing-features li {
+      margin-bottom: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 15px;
+      color: rgba(255,255,255,0.8);
+      line-height: 1.4;
+    }
+    .pricing-features li strong {
+      color: white;
+    }
+    .pricing-features svg {
+      flex-shrink: 0;
+      margin-top: 2px;
+      color: var(--red);
+    }
+
+    /* How it works comparison section styles */
+    #s-how-it-works {
+      background: rgba(10, 10, 10, 0.45);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 100px 24px;
+    }
+    #s-how-it-works .content-container {
+      max-width: 1040px !important;
+    }
+    .placement-grid {
+      display: grid;
+      grid-template-columns: 1fr 80px 1.1fr;
+      align-items: center;
+      gap: 32px;
+      margin-top: 48px;
+    }
+    @media (max-width: 900px) {
+      .placement-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+    }
+    
+    .panel-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+    }
+    
+    .panel-label {
+      font-size: 13px;
+      color: var(--gray);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .panel-badge {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      color: white;
+      text-transform: none;
+      letter-spacing: normal;
+    }
+    
+    .panel-badge.red-badge {
+      background: rgba(227, 0, 15, 0.15);
+      border-color: rgba(227, 0, 15, 0.3);
+      color: #FF4D5A;
+    }
+    
+    /* Left Screen styles */
+    .mock-editor-window {
+      background: #121212;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.8);
+      width: 100%;
+      max-width: 440px;
+      margin: 0 auto;
+    }
+    
+    .window-header {
+      background: #181818;
+      height: 44px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .window-dots {
+      display: flex;
+      gap: 6px;
+    }
+    
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .dot.red { background: #FF5E57; }
+    .dot.yellow { background: #FFBC2F; }
+    .dot.green { background: #28C840; }
+    
+    .window-title {
+      font-family: inherit;
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.05em;
+    }
+    
+    .checkered-area {
+      height: 480px;
+      position: relative;
+      background-color: #161616;
+      background-image: linear-gradient(45deg, #1d1d1d 25%, transparent 25%), 
+                        linear-gradient(-45deg, #1d1d1d 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #1d1d1d 75%), 
+                        linear-gradient(-45deg, transparent 75%, #1d1d1d 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+    }
+    
+    .raw-image-cutout {
+      max-width: 80%;
+      max-height: 80%;
+      border-radius: 8px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+      border: 1px dashed rgba(227, 0, 15, 0.4);
+      position: relative;
+      animation: pulseOutline 3s infinite;
+    }
+    
+    @keyframes pulseOutline {
+      0%, 100% { border-color: rgba(227, 0, 15, 0.4); }
+      50% { border-color: rgba(227, 0, 15, 0.9); }
+    }
+    
+    .tag-bubble {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50px;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 500;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 5;
+    }
+    
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: #28C840;
+      border-radius: 50%;
+      animation: blinkStatus 1.5s infinite;
+    }
+    
+    @keyframes blinkStatus {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+    
+    /* Center divider styles */
+    .divider-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      position: relative;
+    }
+    @media (max-width: 900px) {
+      .divider-col {
+        transform: rotate(90deg);
+        height: 80px;
+        width: 100%;
+      }
+    }
+    
+    .magic-connector {
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(227, 0, 15, 0.2), var(--red), rgba(227, 0, 15, 0.2));
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 1;
+    }
+    
+    .magic-bolt-glow {
+      position: relative;
+      z-index: 2;
+      width: 56px;
+      height: 56px;
+      background: #111;
+      border: 1px solid var(--red);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 30px rgba(227, 0, 15, 0.5);
+      animation: magicPulse 2s infinite ease-in-out;
+    }
+    
+    @keyframes magicPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(227, 0, 15, 0.4); }
+      50% { transform: scale(1.12); box-shadow: 0 0 40px rgba(227, 0, 15, 0.8); border-color: #FF3344; }
+    }
+    
+    /* Right Screen Pin styles */
+    .lifestyle-pin-mockup {
+      width: 100%;
+      max-width: 440px;
+      margin: 0 auto;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.9);
+      border: 1px solid rgba(255,255,255,0.08);
+      position: relative;
+      aspect-ratio: 2 / 3;
+    }
+    
+    .pin-img-wrapper {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    
+    .pin-img-wrapper > img,
+    .pin-img-wrapper .pin-bg-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .pin-overlay-gradient {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.05) 30%, rgba(0,0,0,0.4) 65%, rgba(0,0,0,0.85) 100%);
+      pointer-events: none;
+      z-index: 4;
+    }
+    
+    .pin-top-right-save {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--red);
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 5;
+    }
+    
+    .pin-content-box {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      z-index: 5;
+    }
+    
+    .pin-brand-header {
+      font-size: 11px;
+      color: rgba(255,255,255,0.6);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+    
+    .pin-headline {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: white;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+    }
+    @media (max-width: 480px) {
+      .pin-headline { font-size: 18px; }
+    }
+    
+    .pin-cta-pill {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.15);
+      padding: 10px 20px;
+      border-radius: 50px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #FFF;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    .pin-cta-pillsite {
+      text-transform: lowercase;
+      opacity: 0.85;
+      font-weight: 400;
+    }
+
+
+
+    @keyframes trickPulse {
+      0% { transform: scale(1); box-shadow: 0 10px 40px rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.1); }
+      50% { transform: scale(1.03); box-shadow: 0 15px 50px rgba(227,0,15,0.25); border-color: rgba(227,0,15,0.4); }
+      100% { transform: scale(1); box-shadow: 0 10px 40px rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.1); }
+    }
+    #s4 .email-form {
+      transition: all 0.3s ease;
+    }
+    #s4 .email-form.attention {
+      animation: trickPulse 2s infinite ease-in-out;
+    }
+
+    /* Waitlist Pricing Buttons */
+    .pricing-btn {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      margin-top: auto; /* Push to the absolute bottom of the card content */
+    }
+    .pricing-btn-free {
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .pricing-btn-free:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-2px);
+    }
+    .pricing-btn-pro {
+      background: var(--red);
+      color: white;
+      box-shadow: 0 4px 15px rgba(227, 0, 15, 0.2);
+    }
+    .pricing-btn-pro:hover {
+      background: #ff1f2f;
+      box-shadow: 0 6px 20px rgba(227, 0, 15, 0.45);
+      transform: translateY(-2px);
+    }
+
+    /* Modal CSS */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 10, 10, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-container {
+      background: #121212;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      width: 92%;
+      max-width: 480px;
+      padding: 40px;
+      position: relative;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.61);
+      text-align: center;
+    }
+    .modal-overlay.active .modal-container {
+      transform: translateY(0);
+    }
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      color: var(--gray);
+      cursor: pointer;
+      font-size: 26px;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+    .modal-close:hover {
+      color: white;
+    }
+    .modal-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 38px;
+      color: white;
+      margin-bottom: 12px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .modal-desc {
+      font-size: 15px;
+      color: var(--gray);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .modal-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .modal-input {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 16px;
+      border-radius: 12px;
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .modal-input:focus {
+      border-color: var(--red);
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .modal-submit {
+      background: var(--red);
+      color: white;
+      padding: 16px;
+      border-radius: 12px;
+      border: none;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .modal-submit:hover {
+      background: #ff1f2f;
+      transform: translateY(-1px);
+    }
+    .modal-success-state {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 0;
+    }
+    .modal-success-state.active {
+      display: flex;
+    }
+    .modal-success-icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+    }
+    .modal-success-state h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 32px;
+      margin-bottom: 12px;
+      color: white;
+    }
+    .modal-success-state p {
+      color: var(--gray);
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    /* Sticky Header Bar styles */
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 80px;
+    }
+    .header-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 72px;
+      background: rgba(10, 10, 10, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+    }
+    .header-container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-logo-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-logo-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px;
+      letter-spacing: 0.08em;
+      color: white;
+      transform: translateY(2px);
+    }
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+    .nav-link {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--gray);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-link:hover {
+      color: white;
+    }
+    .header-cta {
+      display: flex;
+      align-items: center;
+    }
+    .nav-cta-btn {
+      background: var(--red);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 50px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .nav-cta-btn:hover {
+      background: #FF0015;
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 640px) {
+      .header-nav {
+        display: none;
+      }
+    }
+    .waitlist-count-highlight {
+      font-weight: 700;
+      font-size: 17px;
+      color: #FF5A00; /* Vibrant energetic deep orange/red glowing color */
+      text-shadow: 0 0 10px rgba(255, 90, 0, 0.4);
+      display: inline;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+  <canvas id="bg"></canvas>
+
+  <div id="page">
+    <!-- Sticky Header Bar -->
+    <header class="header-bar">
+      <div class="header-container">
+        <div class="header-logo-container">
+          <svg width="24" height="24" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="34" height="34" rx="8" fill="#E3000F"/>
+            <svg x="6" y="6" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M 8 5 h 8 a 1 1 0 0 1 1 1 v 1 a 1 1 0 0 1 -1 1 h -1 v 4 l 3 3 v 1 a 1 1 0 0 1 -1 1 h -10 a 1 1 0 0 1 -1 -1 v -1 l 3 -3 v -4 h -1 a 1 1 0 0 1 -1 -1 v -1 a 1 1 0 0 1 1 -1 z" />
+              <line x1="12" y1="17" x2="12" y2="22" />
+            </svg>
+          </svg>
+          <span class="header-logo-text">FRAMEMYPIN</span>
+        </div>
+        <nav class="header-nav">
+          <a href="#s-how-it-works" class="nav-link">Placement Engine</a>
+          <a href="#s3" class="nav-link">Features</a>
+          <a href="#s-pricing" class="nav-link">Pricing</a>
+        </nav>
+        <div class="header-cta">
+          <button class="nav-cta-btn" onclick="document.getElementById('s-pricing').scrollIntoView({ behavior: 'smooth' })">Get Early Access</button>
+        </div>
+      </div>
+    </header>
+
+    <section id="s1" style="padding-top: 140px;">
+      <div class="content-container">
+        <h1>Stop Spending 3 Hours on Pins.<br>Get Traffic by Tomorrow.</h1>
+        <p class="sub-hero" style="max-width: 600px;">FrameMyPin reads your blog post, generates scroll-stopping pins with SEO copy, and schedules them automatically. <span class="highlight-red">No Canva. No ChatGPT. No Tailwind.</span></p>
+        
+        <div class="form-container" id="container-hero">
+          <form class="email-form" id="form-hero">
+            <input type="email" id="email-hero" placeholder="Enter your email" required>
+            <button type="submit">Get Early Access</button>
+          </form>
+          <div class="waitlist-count" id="count-hero">
+            <span style="color:var(--red); margin-right: 4px;">🔥</span> Join <span class="waitlist-count-highlight"><span class="dynamic-waitlist-number">0</span></span> creators on the waitlist
+          </div>
+          <p style="margin-top: 16px; font-size: 14px; color: var(--gray); font-family: 'DM Sans', sans-serif; opacity: 0.85; line-height: 1.5; max-width: 480px; margin-left: auto; margin-right: auto; text-align: center;">
+            463M Pinterest users. &bull; 5B+ monthly searches. &bull; <span style="color: white; font-weight: 500;">96% unbranded</span> — meaning you can rank right now.
+          </p>
+          
+          <div class="success-card" id="success-hero">
+            <div class="success-icon">🎉</div>
+            <h3 class="success-title">You're #<span class="pos-num ui-pos-hero">...</span> on the waitlist!</h3>
+            <p class="success-desc">We will contact you with early access instructions very soon.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="s-how-it-works">
+      <div class="content-container">
+        <div style="text-align: center; margin-bottom: 48px;">
+          <div style="font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--red); margin-bottom: 12px;">AI Product Placement Engine</div>
+          <h2 style="font-size: 56px; margin-bottom: 16px; line-height: 1.05;">From Raw Inventory to High-Click Pin. Instantly.</h2>
+          <p class="sub-hero" style="text-align: center; max-width: 640px; margin: 0 auto;">
+            Just upload a product image. FrameMyPin auto-extracts your item and flawlessly places it into trending high-converting lifestyles — complete with optimized keywords and brand styling.
+          </p>
+        </div>
+        
+        <div class="placement-grid">
+          <!-- Left: Upload Cutout -->
+          <div class="panel-wrapper">
+            <div class="panel-label">
+              <span>What You Upload</span>
+              <span class="panel-badge">Your Raw Product Photo</span>
+            </div>
+            
+            <div class="mock-editor-window">
+              <div class="window-header">
+                <div class="window-dots">
+                  <span class="dot red"></span>
+                  <span class="dot yellow"></span>
+                  <span class="dot green"></span>
+                </div>
+                <div class="window-title">RAW_PRODUCT_IMAGE.PNG (2.4 MB)</div>
+                <div style="width: 32px;"></div>
+              </div>
+              <div class="checkered-area">
+                <div class="tag-bubble">
+                  <span class="status-dot"></span>
+                  <span>Object Cutout Extracted</span>
+                </div>
+                <img class="raw-image-cutout" src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&q=80&w=600&h=600" alt="Raw handbag cutout" referrerPolicy="no-referrer">
+              </div>
+            </div>
+          </div>
+          
+          <!-- Center Divider with lightning icon -->
+          <div class="divider-col">
+            <div class="magic-connector"></div>
+            <div class="magic-bolt-glow">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+            </div>
+          </div>
+          
+          <!-- Right: Crafted Pin -->
+          <div class="panel-wrapper">
+            <div class="panel-label">
+              <span>What FrameMyPin Generates</span>
+              <span class="panel-badge red-badge">AI Lifestyle Pin Result</span>
+            </div>
+            
+            <div class="lifestyle-pin-mockup">
+              <div class="pin-img-wrapper">
+                <!-- Stunning integrated lifestyle photograph where the brown leather bag is worn beautifully on a sunlit city street -->
+                <img class="pin-bg-img" src="src/assets/images/regenerated_image_1779454843587.png" alt="Generated lifestyle Pinterest pin" referrerPolicy="no-referrer">
+                
+                <div class="pin-overlay-gradient"></div>
+                <div class="pin-top-right-save">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                  <span>Save</span>
+                </div>
+                <div class="pin-content-box">
+                  <div class="pin-brand-header">Minimalist Leather Totes</div>
+                  <h3 class="pin-headline">The Only Tote Bag You Need For A Warm Sunlit Summer.</h3>
+                  <div class="pin-cta-pill">
+                    <span>Shop Now</span>
+                    <span class="pin-cta-pillsite">example.com</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </section>
+
+    <section id="s2">
+      <div class="content-container">
+        <h2>3 Steps. That's It.</h2>
+        
+        <div class="step-item">
+          <div class="step-num">01</div>
+          <div class="step-text">
+            <h3>Connect Your Account</h3>
+            <p>Link your Pinterest securely in 30 seconds. No complicated setups or developer keys required.</p>
+          </div>
+        </div>
+        
+        <div class="step-item">
+          <div class="step-num">02</div>
+          <div class="step-text">
+            <h3>Drop a Link or Topic</h3>
+            <p>Paste a URL to your blog post or product. We instantly pull images, context, and generate 10 unique pin variations.</p>
+          </div>
+        </div>
+        
+        <div class="step-item">
+          <div class="step-num">03</div>
+          <div class="step-text">
+            <h3>Auto-Schedule & Grow</h3>
+            <p>Approve the ones you like. We drip them out at the optimal times to maximize clicks and bypass spam filters.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="s3">
+      <div class="content-container">
+        <h2>Everything You Need<br>to Dominate Pinterest</h2>
+        
+        <div class="features-grid">
+          <div class="feature-card">
+            <h3>AI Pin Designer</h3>
+            <p>No more clicking around in Canva. Get high-converting designs instantly tailored to your brand.</p>
+          </div>
+          <div class="feature-card">
+            <h3>URL Intelligence</h3>
+            <p>We read your page like a human to generate relevant images and copy.</p>
+          </div>
+          <div class="feature-card">
+            <h3>Smart Scheduling</h3>
+            <p>Post 5x a day without lifting a finger. Set it and forget it.</p>
+          </div>
+          <div class="feature-card">
+            <h3>SEO Copywriting</h3>
+            <p>Keyword-rich titles and descriptions generated automatically for search.</p>
+          </div>
+          <div class="feature-card">
+            <h3>Bulk Generation</h3>
+            <p>Turn your entire backlog of articles into fresh pins in one afternoon.</p>
+          </div>
+          <div class="feature-card">
+            <h3>AI Product Placement</h3>
+            <p>Upload your product image and watch our AI blend it seamlessly into beautiful, custom-generated lifestyle backgrounds.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="s-why-now">
+      <div class="content-container" style="text-align: center;">
+        <h2 style="font-size: 44px; margin-bottom: 24px;">Why Pinterest? Why Now?</h2>
+        <p class="sub-hero" style="max-width: 600px; font-size: 20px; line-height: 1.6; color: white;">
+          Pinterest is the most underpriced traffic source right now. 96% of searches have no brand dominance. Most of your competitors aren't even on it. That window won't stay open forever.
+        </p>
+      </div>
+    </section>
+
+    <section id="s-pricing">
+      <div class="content-container" style="max-width: 900px; text-align: center;">
+        <h2>Simple, Transparent Pricing</h2>
+        <p class="sub-hero">Everything you need to grow on Pinterest, at a price that makes sense.</p>
+        
+        <div class="pricing-grid">
+          <!-- Free Tier -->
+          <div class="pricing-card">
+            <h3 class="pricing-tier">Spark</h3>
+            <p style="color: var(--gray); font-size: 14px; margin-top: -4px; margin-bottom: 12px; font-family: 'DM Sans', sans-serif;">Free Forever</p>
+            <div class="pricing-price">$0<span> / month</span></div>
+            
+            <ul class="pricing-features">
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span><strong>25 pins / month</strong> (1 per day)</span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span><strong>5 text-to-image</strong> generations / month</span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <span style="color: #666">AI Product Placement (Not Available)</span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span><strong>Hero Image Only</strong> extraction</span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span><strong>15 web scrapes</strong> / month</span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span><strong>1 Pinterest Account</strong></span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span>Up to <strong>5 pins</strong> in queue</span>
+              </li>
+            </ul>
+            <button class="pricing-btn pricing-btn-free" onclick="openWaitlistModal('free')">Join Free Waitlist</button>
+          </div>
+          
+          <!-- Pro Tier -->
+          <div class="pricing-card pro">
+            <div class="pricing-badge">Most Popular</div>
+            <h3 class="pricing-tier">Pro</h3>
+            <p style="color: var(--gray); font-size: 14px; margin-top: -4px; margin-bottom: 12px; opacity: 0; font-family: 'DM Sans', sans-serif;">Spacer</p>
+            <div class="pricing-price">$19.99<span> / month</span></div>
+            
+            <ul class="pricing-features">
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span><strong>300 pins / month</strong> (10 per day)</span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span><strong>60 generations / month</strong> (Includes text-to-image)</span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span><strong>AI Product Placement</strong> (Upload item → AI blends into custom background)</span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span><strong>Full Deep Extraction</strong> (All images)</span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span><strong>UNLIMITED</strong> Article Scrapes</span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span><strong>3 Pinterest Accounts</strong></span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span><strong>Unlimited scheduling queue</strong></span>
+              </li>
+            </ul>
+            <button id="pro-pricing-btn" class="pricing-btn pricing-btn-pro" onclick="openWaitlistModal('paid')">Claim 1 of 20 Founder Spots</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="s4">
+      <div class="content-container">
+        <h2>Don't Miss Your Spot</h2>
+        <p class="sub-hero">Pinterest is the most underpriced traffic source right now. Get early access before we launch.</p>
+        
+        <div class="form-container" id="container-footer">
+          <form class="email-form" id="form-footer">
+            <input type="email" id="email-footer" placeholder="Enter your email" required>
+            <button type="submit">Join the Waitlist</button>
+          </form>
+          <div class="waitlist-count" id="count-footer" style="margin-top: 32px">
+            Join <span class="waitlist-count-highlight"><span class="dynamic-waitlist-number">0</span></span> creators on the waitlist
+          </div>
+
+          <div class="success-card" id="success-footer">
+            <div class="success-icon">🎉</div>
+            <h3 class="success-title">You're #<span class="pos-num ui-pos-footer">...</span> on the waitlist!</h3>
+            <p class="success-desc">We will contact you with early access instructions very soon.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Waitlist Selection Modal -->
+  <div id="waitlist-modal" class="modal-overlay">
+    <div class="modal-container">
+      <button class="modal-close" id="modal-close-btn">&times;</button>
+      
+      <!-- Default Entry State -->
+      <div id="modal-entry-state">
+        <h3 id="modal-title" class="modal-title">Join Waitlist</h3>
+        <p id="modal-desc" class="modal-desc"></p>
+        
+        <div id="modal-error-message" style="display: none; background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.25); color: #fb7185; padding: 12px 16px; border-radius: 12px; font-size: 14px; margin-bottom: 20px; font-weight: 500; text-align: left; align-items: center; gap: 8px;">
+          <span style="font-size: 16px;">⚠️</span>
+          <span class="error-text">You're already on the list!</span>
+        </div>
+
+        <form id="modal-form" class="modal-form">
+          <input type="email" id="modal-email-input" class="modal-input" placeholder="Enter your email address" required>
+          <button type="submit" id="modal-submit-btn" class="modal-submit">Reserve Spot</button>
+        </form>
+      </div>
+
+      <!-- Success State -->
+      <div id="modal-success-state" class="modal-success-state">
+        <div class="modal-success-icon">🎉</div>
+        <h3 id="modal-success-title">Confirmed!</h3>
+        <p id="modal-success-message" class="sub-hero" style="font-size: 16px; margin-bottom: 20px; color: white;"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dual-Action Intent Selection Modal -->
+  <div id="intent-modal" class="modal-overlay">
+    <div class="modal-container" style="max-width: 520px;">
+      <button class="modal-close" id="intent-modal-close-btn">&times;</button>
+      
+      <div>
+        <h3 class="modal-title" style="font-size: 32px; line-height: 1.1; margin-bottom: 16px;">Secure Your FrameMyPin Launch Spot!</h3>
+        <p class="modal-desc" style="margin-bottom: 34px;">Choose a launch plan for your account to finish joining the waitlist. You can always change your mind later!</p>
+        
+        <div id="intent-error-message" style="display: none; background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.25); color: #fb7185; padding: 12px 16px; border-radius: 12px; font-size: 14px; margin-bottom: 24px; font-weight: 500; text-align: left; align-items: center; gap: 8px;">
+          <span style="font-size: 16px;">⚠️</span>
+          <span class="error-text">You're already on the list!</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <!-- Option A: Free Waitlist -->
+          <button id="intent-btn-free" class="pricing-btn pricing-btn-free" style="margin-top: 0; padding: 18px; font-size: 18px;">
+            Join the Free Waitlist
+          </button>
+          
+          <!-- Option B: Paid Founder Spot -->
+          <button id="intent-btn-paid" class="pricing-btn pricing-btn-pro" style="margin-top: 0; padding: 18px; font-size: 18px;">
+            Claim 1 of 20 Founder Spots
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/simplex-noise@2.4.0/simplex-noise.min.js"></script>
+  
+  <script type="module">
+    import { initializeApp } from 'firebase/app';
+    import { initializeFirestore, collection, addDoc, doc, setDoc, onSnapshot, serverTimestamp, increment, getDoc, getCountFromServer, query, where, getDocs, limit } from 'firebase/firestore';
+    import firebaseConfig from './firebase-applet-config.json';
+
+    const app = initializeApp(firebaseConfig);
+    const db = initializeFirestore(app, {
+      experimentalForceLongPolling: true
+    }, firebaseConfig.firestoreDatabaseId);
+
+    // --- UTILS ---
+    function lerp(start, end, amt) {
+      return (1 - amt) * start + amt * end;
+    }
+    function mapRange(value, inMin, inMax, outMin, outMax) {
+      let v = Math.max(inMin, Math.min(inMax, value));
+      return outMin + (outMax - outMin) * ((v - inMin) / (inMax - inMin));
+    }
+
+    // --- THREE JS SETUP ---
+    const canvas = document.getElementById('bg');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.3;
+    renderer.outputEncoding = THREE.sRGBEncoding;
+
+    const scene = new THREE.Scene();
+    
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.z = 5;
+
+    // --- LIGHTS ---
+    const ambLight = new THREE.AmbientLight('#ffffff', 0.6);
+    scene.add(ambLight);
+
+    const dirLight = new THREE.DirectionalLight('#ffffff', 2.0);
+    dirLight.position.set(4, 6, 4);
+    scene.add(dirLight);
+
+    const redLight = new THREE.PointLight('#FF3030', 3.0);
+    redLight.position.set(-3, 2, 3);
+    scene.add(redLight);
+
+    const blueLight = new THREE.PointLight('#4488FF', 1.5);
+    blueLight.position.set(4, -2, -2);
+    scene.add(blueLight);
+
+    const fillLight = new THREE.PointLight('#ffffff', 0.8);
+    fillLight.position.set(0, -4, 2);
+    scene.add(fillLight);
+
+    // Dynamic lights
+    const spotLightPhase3 = new THREE.PointLight('#ffffff', 0);
+    spotLightPhase3.position.set(0, 0, 4);
+    scene.add(spotLightPhase3);
+
+    const glowLightPhase4 = new THREE.PointLight('#FF0020', 0);
+    glowLightPhase4.position.set(0, 0, 2);
+    scene.add(glowLightPhase4);
+
+    // --- PUSHPIN (Realistic Lathe Redesign) ---
+    const pinGroup = new THREE.Group();
+    
+    // Premium Materials
+    const headMat = new THREE.MeshPhysicalMaterial({
+      color: 0xE3000F, // Brand red
+      roughness: 0.2,
+      metalness: 0.7,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.1,
+      transparent: true,
+      opacity: 1
+    });
+
+    const silverMat = new THREE.MeshStandardMaterial({
+      color: 0xFFFFFF,
+      roughness: 0.2,
+      metalness: 0.9,
+      transparent: true,
+      opacity: 1
+    });
+    
+    // Lathe Geometry for Pushpin Body (Modeled after image, bottom to top for correct normals)
+    const curvePoints = [
+      new THREE.Vector2(0.001, -0.7),
+      new THREE.Vector2(0.6, -0.7),
+      new THREE.Vector2(0.85, -0.6),
+      new THREE.Vector2(0.8, -0.4),
+      new THREE.Vector2(0.4, -0.2),
+      new THREE.Vector2(0.28, 0.1),
+      new THREE.Vector2(0.3, 0.4),
+      new THREE.Vector2(0.6, 0.6),
+      new THREE.Vector2(0.7, 0.8),
+      new THREE.Vector2(0.6, 0.95),
+      new THREE.Vector2(0.001, 1.0)
+    ];
+    const splineCurve = new THREE.SplineCurve(curvePoints);
+    const lathePoints = splineCurve.getPoints(50);
+    const bodyGeo = new THREE.LatheGeometry(lathePoints, 64);
+    const bodyMesh = new THREE.Mesh(bodyGeo, headMat);
+    pinGroup.add(bodyMesh);
+
+    // Needle
+    const needleGeo = new THREE.CylinderGeometry(0.03, 0.01, 1.6, 16);
+    const needleMesh = new THREE.Mesh(needleGeo, silverMat);
+    needleMesh.position.y = -1.5;
+    pinGroup.add(needleMesh);
+
+    pinGroup.position.set(0, 0, 0);
+    scene.add(pinGroup);
+
+    // --- INTERACTIVE PARTICLES (Universe of Pins) ---
+    const pCount = 3000;
+    const pGeo = new THREE.BufferGeometry();
+    const pPos = new Float32Array(pCount * 3);
+    const pBase = new Float32Array(pCount * 3);
+    const pColor = new Float32Array(pCount * 3);
+    for(let i = 0; i < pCount; i++) {
+      let x = (Math.random() - 0.5) * 40; 
+      let y = (Math.random() - 0.5) * 40;
+      let z = (Math.random() - 0.5) * 20 - 5;
+      pPos[i*3] = x; pPos[i*3+1] = y; pPos[i*3+2] = z;
+      pBase[i*3] = x; pBase[i*3+1] = y; pBase[i*3+2] = z;
+      
+      // Mostly white, some red for pinterest accent
+      const isRed = Math.random() > 0.9;
+      pColor[i*3] = isRed ? 0.89 : 1.0; // r
+      pColor[i*3+1] = isRed ? 0.0 : 1.0; // g
+      pColor[i*3+2] = isRed ? 0.05 : 1.0; // b
+    }
+    pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+    pGeo.setAttribute('color', new THREE.BufferAttribute(pColor, 3));
+    
+    // Create soft glowing circle texture
+    const pCanvas = document.createElement('canvas');
+    pCanvas.width = 32;
+    pCanvas.height = 32;
+    const pCtx = pCanvas.getContext('2d');
+    
+    // Clean, soft whitish glow
+    const pGrad = pCtx.createRadialGradient(16, 16, 0, 16, 16, 16);
+    pGrad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    pGrad.addColorStop(0.3, 'rgba(255, 255, 255, 0.4)');
+    pGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    pCtx.fillStyle = pGrad;
+    pCtx.fillRect(0, 0, 32, 32);
+    
+    const pTex = new THREE.CanvasTexture(pCanvas);
+
+    const pMat = new THREE.PointsMaterial({ 
+      size: 0.15, 
+      transparent: true, 
+      opacity: 0.7,
+      vertexColors: true,
+      map: pTex,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+    const particles = new THREE.Points(pGeo, pMat);
+    scene.add(particles);
+
+    // Mouse Tracking for Parallax
+    let targetMouseX = 0;
+    let targetMouseY = 0;
+    let sceneMouseX = 0;
+    let sceneMouseY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+      targetMouseX = (e.clientX / window.innerWidth) * 2 - 1;
+      targetMouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+    });
+
+    // --- CARDS ---
+    function createCardTexture(headline, colorStart, colorEnd) {
+      const cvs = document.createElement('canvas');
+      cvs.width = 300;
+      cvs.height = 430;
+      const ctx = cvs.getContext('2d');
+      if (!ctx) return new THREE.Texture();
+
+      ctx.fillStyle = '#111111';
+      ctx.fillRect(0, 0, 300, 430);
+
+      const grad = ctx.createLinearGradient(0, 0, 0, 250);
+      grad.addColorStop(0, colorStart);
+      grad.addColorStop(1, colorEnd);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 300, 250);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 26px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      const words = headline.split(' ');
+      const lines = [];
+      let currentLine = words[0];
+      for (let i = 1; i < words.length; i++) {
+        const word = words[i];
+        const width = ctx.measureText(currentLine + " " + word).width;
+        if (width < 260) {
+          currentLine += " " + word;
+        } else {
+          lines.push(currentLine);
+          currentLine = word;
+        }
+      }
+      lines.push(currentLine);
+      
+      const numLines = Math.min(lines.length, 2);
+      if (numLines === 2) {
+        ctx.fillText(lines[0], 150, 110);
+        ctx.fillText(lines[1], 150, 145);
+      } else {
+        ctx.fillText(lines[0], 150, 127);
+      }
+
+      ctx.fillStyle = '#E3000F';
+      ctx.fillRect(30, 250, 240, 3);
+
+      ctx.fillStyle = '#666666';
+      ctx.font = '11px sans-serif';
+      ctx.fillText('FrameMyPin', 150, 400);
+
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeRect(1.5, 1.5, 297, 427);
+
+      const tex = new THREE.CanvasTexture(cvs);
+      tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      return tex;
+    }
+
+    const cardGeo = new THREE.PlaneGeometry(1.5, 2.15);
+    const edgesGeo = new THREE.EdgesGeometry(cardGeo);
+
+    const textures = [
+      createCardTexture("10 Pins That Drive 10K Monthly Clicks", "#3D0000", "#1A0000"),
+      createCardTexture("Automate Your Entire Pinterest Strategy", "#0D1A2E", "#0A0A0A"),
+      createCardTexture("0 to 50K Followers With AI Pins", "#1A0D00", "#0A0A0A")
+    ];
+
+    const cards = [];
+    
+    for (let i = 0; i < 3; i++) {
+      const g = new THREE.Group();
+      
+      const mat = new THREE.MeshStandardMaterial({
+        map: textures[i],
+        roughness: 0.05,
+        metalness: 0.1,
+        transparent: true,
+        opacity: 0
+      });
+      const mesh = new THREE.Mesh(cardGeo, mat);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      g.add(mesh);
+
+      const backMat = new THREE.MeshStandardMaterial({ color: 0x111111, transparent: true, opacity: 0 });
+      const backMesh = new THREE.Mesh(cardGeo, backMat);
+      backMesh.rotation.y = Math.PI;
+      g.add(backMesh);
+
+      const edgesMat = new THREE.LineBasicMaterial({ color: 0xE3000F, transparent: true, opacity: 0 });
+      const edgesLine = new THREE.LineSegments(edgesGeo, edgesMat);
+      g.add(edgesLine);
+
+      g.position.set(6, 0, 0);
+      scene.add(g);
+      cards.push({ group: g, mats: [mat, backMat], edges: edgesMat });
+    }
+
+    // --- ANIMATION LOOP ---
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const time = clock.getElapsedTime();
+
+      // Scroll progress
+      const scrollY = window.scrollY;
+      const sh = document.getElementById('page').offsetHeight;
+      const wh = window.innerHeight;
+      const maxScroll = Math.max(1, sh - wh);
+      const progress = Math.max(0, Math.min(scrollY / maxScroll, 1));
+
+      const p2 = mapRange(progress, 0.20, 0.50, 0, 1);
+      const p3 = mapRange(progress, 0.50, 0.72, 0, 1);
+      const p4 = mapRange(progress, 0.72, 1.00, 0, 1);
+
+      // --- PUSHPIN & PARTICLES ANIMATION ---
+      let pinTargetScale = 1.0;
+      let pinTargetPos = new THREE.Vector3(0, Math.sin(time*1.5)*0.1, 0); // Bobbing
+      let pinTargetRotX = 0.2 + Math.sin(time*1.0)*0.1;
+      let pinTargetRotZ = -0.2 + Math.cos(time*0.5)*0.05;
+      let pinTargetRotY = time * 0.2;
+      let pinTargetOpacity = 1;
+
+      if (progress > 0.1 && progress < 0.72) {
+        // Exits scene quickly upward/away
+        pinTargetPos.set(4, 5, -5);
+        pinTargetRotX = Math.PI;
+        pinTargetScale = lerp(1.0, 0, p2);
+        pinTargetOpacity = lerp(1, 0, p2);
+      } else if (progress >= 0.72) {
+        // Dives into bottom text area, plunging into the ground below waitlist
+        let dropPath = lerp(8, -2.1, Math.pow(p4, 2)); // Move it to sit exactly below the waitlist text, behind the form
+        pinTargetPos.set(0, dropPath, 1.5);
+        pinTargetScale = 1.0;
+        pinTargetRotX = lerp(0.5, -0.2, p4); // Arcs down softly without breaking 3d shape
+        pinTargetRotZ = 0;
+        pinTargetRotY = Math.PI * 2 * p4; // Ensure smooth 1 full rotation into place
+        pinTargetOpacity = lerp(0, 1, p4);
+      }
+
+      // Apply
+      const pv = lerp(pinGroup.scale.x, pinTargetScale, 0.055);
+      pinGroup.scale.set(pv, pv, pv);
+      pinGroup.position.lerp(pinTargetPos, 0.055);
+      pinGroup.rotation.x = lerp(pinGroup.rotation.x, pinTargetRotX, 0.055);
+      pinGroup.rotation.y = lerp(pinGroup.rotation.y, pinTargetRotY, 0.055);
+      pinGroup.rotation.z = lerp(pinGroup.rotation.z, pinTargetRotZ, 0.055);
+      headMat.opacity = lerp(headMat.opacity, pinTargetOpacity, 0.055);
+      silverMat.opacity = lerp(silverMat.opacity, pinTargetOpacity, 0.055);
+
+      // Particle interactions
+      const pPosArray = particles.geometry.attributes.position.array;
+      let pmx = sceneMouseX * 15; 
+      let pmy = sceneMouseY * 10;
+      
+      for(let i=0; i<pCount; i++) {
+        let ix = i*3, iy = i*3+1, iz = i*3+2;
+        let bx = pBase[ix], by = pBase[iy], bz = pBase[iz];
+        
+        let dx = pmx - bx;
+        let dy = pmy - by;
+        let dist = Math.sqrt(dx*dx + dy*dy);
+        
+        let targetX = bx;
+        let targetY = by;
+        
+        if(dist < 3.0 && dist > 0.01) {
+          let force = (3.0 - dist) / 3.0; // repelling force
+          targetX = bx - (dx/dist) * force * 2.5;
+          targetY = by - (dy/dist) * force * 2.5;
+        }
+        
+        pPosArray[ix] = lerp(pPosArray[ix], targetX, 0.1);
+        pPosArray[iy] = lerp(pPosArray[iy], targetY, 0.1);
+        pPosArray[iz] = bz + Math.sin(time*0.5 + i)*0.5; // gentle ambient bob
+      }
+      particles.geometry.attributes.position.needsUpdate = true;
+
+      // Mouse Parallax for entire scene (Immersive Depth)
+      sceneMouseX = lerp(sceneMouseX, targetMouseX, 0.05);
+      sceneMouseY = lerp(sceneMouseY, targetMouseY, 0.05);
+
+      scene.rotation.x = sceneMouseY * 0.15;
+      scene.rotation.y = sceneMouseX * 0.15;
+
+      // CARDS STATE
+      let targetPos = [
+        new THREE.Vector3(6, 0, 0),
+        new THREE.Vector3(6, 0, 0),
+        new THREE.Vector3(6, 0, 0)
+      ];
+      let targetRotY = [0, 0, 0];
+      let targetOpacity = [0, 0, 0];
+      let targetScale = [1, 1, 1];
+      let rotSpeedAdd = 0;
+
+      if (progress >= 0.2 && progress < 0.5) {
+        targetPos[0].set(-1.2, 0.5, 0); targetRotY[0] = -0.2;
+        targetPos[1].set(0.1, 0, 0.4);  targetRotY[1] = 0;
+        targetPos[2].set(1.3, -0.5, 0); targetRotY[2] = 0.2;
+        
+        targetOpacity[0] = mapRange(p2, 0.0, 0.4, 0, 1);
+        targetOpacity[1] = mapRange(p2, 0.2, 0.6, 0, 1);
+        targetOpacity[2] = mapRange(p2, 0.4, 0.8, 0, 1);
+      } 
+      else if (progress >= 0.5 && progress < 0.72) {
+        targetPos[0].set(-2.8, 0.3, -0.8); targetRotY[0] = -0.5;
+        targetPos[1].set(0, 0, 0.8);       targetRotY[1] = 0;     targetScale[1] = 1.18;
+        targetPos[2].set(2.8, -0.3, -0.8); targetRotY[2] = 0.5;
+        
+        targetOpacity = [1, 1, 1];
+      }
+      else if (progress >= 0.72) {
+        targetPos[0].set(-2.8, 0.3, -0.8); targetRotY[0] = -0.5;
+        targetPos[1].set(0, 0, 0.8);       targetRotY[1] = 0;
+        targetPos[2].set(2.8, -0.3, -0.8); targetRotY[2] = 0.5;
+        
+        const s = lerp(1, 0, p4);
+        targetScale = [s, s * 1.18, s];
+        
+        const yDrop = lerp(0, -4, p4);
+        targetPos[0].y += yDrop;
+        targetPos[1].y += yDrop;
+        targetPos[2].y += yDrop;
+
+        rotSpeedAdd = 0.025;
+        
+        const op = lerp(1, 0, p4);
+        targetOpacity = [op, op, op];
+      }
+
+      for (let i = 0; i < 3; i++) {
+        const c = cards[i];
+        
+        if (progress > 0.1 && progress < 0.72) {
+          targetPos[i].y += Math.sin(time + i * 2.1) * 0.06;
+          // Add extra depth based on mouse position to cards
+          targetRotY[i] += sceneMouseX * 0.1;
+          targetPos[i].x += sceneMouseX * 0.2;
+          targetPos[i].y += sceneMouseY * 0.2;
+        }
+
+        c.group.position.lerp(targetPos[i], 0.055);
+        
+        if (progress >= 0.72) {
+            c.group.rotation.y += rotSpeedAdd;
+        } else {
+            c.group.rotation.y = lerp(c.group.rotation.y, targetRotY[i], 0.055);
+        }
+
+        const sv = targetScale[i];
+        c.group.scale.lerp(new THREE.Vector3(sv, sv, sv), 0.055);
+
+        c.mats[0].opacity = lerp(c.mats[0].opacity, targetOpacity[i], 0.055);
+        c.mats[1].opacity = lerp(c.mats[1].opacity, targetOpacity[i], 0.055);
+        c.edges.opacity = lerp(c.edges.opacity, targetOpacity[i] * 0.4, 0.055);
+      }
+
+      spotLightPhase3.intensity = lerp(spotLightPhase3.intensity, lerp(0, 3.0, p3), 0.055);
+      glowLightPhase4.intensity = lerp(glowLightPhase4.intensity, lerp(0, 5.0, p4), 0.055);
+      
+      if (progress >= 0.72 && progress <= 1) {
+          spotLightPhase3.intensity = lerp(spotLightPhase3.intensity, 0, 0.055);
+      }
+      
+      const s4Form = document.querySelector('#s4 .email-form');
+      if (progress > 0.95) {
+        if (!s4Form.classList.contains('attention')) s4Form.classList.add('attention');
+      } else {
+        if (s4Form.classList.contains('attention')) s4Form.classList.remove('attention');
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // --- FIREBASE WAITLIST LOGIC ---
+    
+    let currentGlobalCount = 0;
+    let activePaidCount = 0;
+    let activeFreeCount = 0;
+
+    // Dynamic UI updater for the founder spots cap
+    function updateCapUI() {
+      const proBtn = document.getElementById('pro-pricing-btn');
+      const intentPaidBtn = document.getElementById('intent-btn-paid');
+
+      let btnText = "";
+      if (activePaidCount === 0) {
+        btnText = "Claim 1 of 20 Founder Spots";
+      } else if (activePaidCount > 0 && activePaidCount < 20) {
+        btnText = `Only ${20 - activePaidCount} Founder Spots Left`;
+      } else {
+        btnText = "20 Founder Spots Filled! Join Backup List";
+      }
+
+      if (proBtn) {
+        proBtn.innerText = btnText;
+      }
+      if (intentPaidBtn) {
+        intentPaidBtn.innerText = btnText;
+      }
+    }
+
+    // Global cross-plan duplicate check across all three waitlist collections in parallel
+    async function isDuplicateEmailGlobal(email) {
+      try {
+        const qFree = query(collection(db, 'waitlist_free'), where("email", "==", email), limit(1));
+        const qPaid = query(collection(db, 'waitlist_paid'), where("email", "==", email), limit(1));
+        const qBackup = query(collection(db, 'waitlist_paid_backup'), where("email", "==", email), limit(1));
+
+        const [snapFree, snapPaid, snapBackup] = await Promise.all([
+          getDocs(qFree),
+          getDocs(qPaid),
+          getDocs(qBackup)
+        ]);
+
+        return !snapFree.empty || !snapPaid.empty || !snapBackup.empty;
+      } catch (err) {
+        console.error("Error executing global duplicate check: ", err);
+        return false;
+      }
+    }
+
+    // Instantly reacts to local waitlist counts changes
+    function updateWaitlistCountsUI() {
+      const totalCount = currentGlobalCount;
+      const countText = totalCount === 0 ? "Join our waitlist" : `Join <span class="waitlist-count-highlight">${totalCount}</span> ${totalCount === 1 ? 'creator' : 'creators'} on the waitlist`;
+      
+      const heroEl = document.getElementById('count-hero');
+      if (heroEl) {
+        heroEl.innerHTML = `<span style="color:var(--red); margin-right: 4px;">🔥</span> ${countText}`;
+      }
+      
+      const footerEl = document.getElementById('count-footer');
+      if (footerEl) {
+        footerEl.innerHTML = countText;
+      }
+
+      updateCapUI();
+    }
+
+    // Fast, accurate server counts directly using getCountFromServer on load
+    async function loadWaitlistCounts() {
+      try {
+        const paidColl = collection(db, 'waitlist_paid');
+        const freeColl = collection(db, 'waitlist_free');
+
+        const [paidSnap, freeSnap] = await Promise.all([
+          getCountFromServer(paidColl),
+          getCountFromServer(freeColl)
+        ]);
+
+        activePaidCount = paidSnap.data().count;
+        activeFreeCount = freeSnap.data().count;
+        currentGlobalCount = activePaidCount + activeFreeCount;
+
+        updateWaitlistCountsUI();
+      } catch (err) {
+        console.error("Error executing dynamic waitlist check from Server: ", err);
+      }
+    }
+
+    // Run dynamic server-side waitlist check on load
+    loadWaitlistCounts();
+
+    function triggerConfetti() {
+      var duration = 3 * 1000;
+      var animationEnd = Date.now() + duration;
+      var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
+
+      function randomInRange(min, max) {
+        return Math.random() * (max - min) + min;
+      }
+
+      var interval = setInterval(function() {
+        var timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+          return clearInterval(interval);
+        }
+
+        var particleCount = 50 * (timeLeft / duration);
+        confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+        confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+      }, 250);
+    }
+
+    function handleFirestoreError(error, operationType, path) {
+      const errInfo = {
+        error: error instanceof Error ? error.message : String(error),
+        authInfo: {
+          userId: null,
+          email: null
+        },
+        operationType: operationType,
+        path: path
+      };
+      console.error("Firestore error triggered:", errInfo);
+      throw new Error(JSON.stringify(errInfo));
+    }
+
+    // Modal-related state and controls
+    let selectedPlanIntent = 'free';
+
+    window.openWaitlistModal = function(planIntent) {
+      selectedPlanIntent = planIntent;
+
+      // Handle the 20-customer cap dynamically for the paid tier
+      if (selectedPlanIntent === 'paid' && activePaidCount >= 20) {
+        selectedPlanIntent = 'paid_backup';
+      }
+
+      const modal = document.getElementById('waitlist-modal');
+      const title = document.getElementById('modal-title');
+      const desc = document.getElementById('modal-desc');
+      const submitBtn = document.getElementById('modal-submit-btn');
+      
+      const entryState = document.getElementById('modal-entry-state');
+      const successState = document.getElementById('modal-success-state');
+
+      // Reset error state
+      const errorMsg = document.getElementById('modal-error-message');
+      if (errorMsg) {
+        errorMsg.style.display = 'none';
+      }
+
+      // Reset form states
+      entryState.style.display = 'block';
+      successState.classList.remove('active');
+      const emailInput = document.getElementById('modal-email-input');
+      emailInput.value = '';
+      submitBtn.disabled = false;
+
+      if (selectedPlanIntent === 'free') {
+        title.innerText = "Join Free Waitlist";
+        desc.innerText = "Enjoy 25 pins per month, URL intelligence, and text-to-image variations early. No credit card required.";
+        submitBtn.innerText = "Secure My Free Spot";
+      } else if (selectedPlanIntent === 'paid') {
+        title.innerText = "Claim Founder Spot";
+        let subText = "";
+        if (activePaidCount === 0) {
+          subText = "Claim 1 of 20 Founder Spots";
+        } else {
+          subText = `Only ${20 - activePaidCount} Founder Spots Left`;
+        }
+        desc.innerText = `${subText} on the waitlist. Unlock 300 pins per month, AI Product Placement, and unlimited scrapes.`;
+        submitBtn.innerText = subText;
+      } else {
+        title.innerText = "Join Paid Backup Waitlist";
+        desc.innerText = "Founder Spots Filled! Join the Paid Backup Waitlist to secure priority access if standard slots open.";
+        submitBtn.innerText = "20 Founder Spots Filled! Join Backup List";
+      }
+
+      modal.classList.add('active');
+    };
+
+    // Auto-dismiss errors on input of modal form
+    document.getElementById('modal-email-input').addEventListener('input', () => {
+      const errorMsg = document.getElementById('modal-error-message');
+      if (errorMsg) {
+        errorMsg.style.display = 'none';
+      }
+    });
+
+    window.closeWaitlistModal = function() {
+      const modal = document.getElementById('waitlist-modal');
+      modal.classList.remove('active');
+    };
+
+    // Close button / overlay event listeners
+    document.getElementById('modal-close-btn').addEventListener('click', window.closeWaitlistModal);
+    document.getElementById('waitlist-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('waitlist-modal')) {
+        window.closeWaitlistModal();
+      }
+    });
+
+    // Handle Modal Form Submit
+    document.getElementById('modal-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const emailInput = document.getElementById('modal-email-input');
+      const email = emailInput.value.trim();
+      const submitBtn = document.getElementById('modal-submit-btn');
+
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!email || !emailRegex.test(email)) {
+        emailInput.style.outline = '2px solid #FF5A00';
+        emailInput.addEventListener('input', () => {
+          emailInput.style.outline = 'none';
+        }, { once: true });
+        return;
+      }
+
+      emailInput.style.outline = 'none';
+
+      // Reset error state
+      const errorMsg = document.getElementById('modal-error-message');
+      if (errorMsg) {
+        errorMsg.style.display = 'none';
+      }
+
+      const originalBtnText = submitBtn.innerText;
+      submitBtn.disabled = true;
+
+      try {
+        // Step 1: Instantly show Checking availability...
+        submitBtn.innerText = "🔍 Checking availability...";
+
+        // Check duplicate globally across all three collections
+        const duplicate = await isDuplicateEmailGlobal(email);
+        if (duplicate) {
+          if (errorMsg) {
+            errorMsg.querySelector('.error-text').innerText = "This email is already registered on a waitlist!";
+            errorMsg.style.display = 'flex';
+          }
+          submitBtn.disabled = false;
+          submitBtn.innerText = originalBtnText;
+          return;
+        }
+
+        // Step 2: Instantly show Securing your spot... when actual write starts
+        submitBtn.innerText = "⚡ Securing your spot...";
+
+        let actualIntent = selectedPlanIntent;
+        let targetCollection = 'waitlist_free';
+
+        if (actualIntent === 'free') {
+          targetCollection = 'waitlist_free';
+        } else if (actualIntent === 'paid') {
+          if (activePaidCount < 20) {
+            targetCollection = 'waitlist_paid';
+          } else {
+            actualIntent = 'paid_backup';
+            targetCollection = 'waitlist_paid_backup';
+          }
+        } else {
+          actualIntent = 'paid_backup';
+          targetCollection = 'waitlist_paid_backup';
+        }
+
+        const payload = {
+          email: email,
+          planIntent: actualIntent
+        };
+
+        try {
+          await addDoc(collection(db, targetCollection), payload);
+        } catch (dbErr) {
+          handleFirestoreError(dbErr, 'CREATE', targetCollection);
+        }
+
+        // Local state increment
+        if (actualIntent === 'free') {
+          activeFreeCount += 1;
+          currentGlobalCount += 1;
+        } else if (actualIntent === 'paid') {
+          activePaidCount += 1;
+          currentGlobalCount += 1;
+        } else {
+          currentGlobalCount += 1;
+        }
+
+        const exactCount = actualIntent === 'free' ? activeFreeCount : activePaidCount;
+
+        // Instantly update the counts in backend UI without fetching from server
+        updateWaitlistCountsUI();
+
+        // Prepare success state UI matching plan selection
+        const entryState = document.getElementById('modal-entry-state');
+        const successState = document.getElementById('modal-success-state');
+        const successTitle = document.getElementById('modal-success-title');
+        const successMessage = document.getElementById('modal-success-message');
+
+        entryState.style.display = 'none';
+        
+        if (actualIntent === 'free') {
+          successTitle.innerText = "Welcome to the Waitlist!";
+          successMessage.innerHTML = `Welcome to the Waitlist! You are <span style="color: var(--red); font-weight: bold;">#${exactCount}</span> on our early waitlist!`;
+        } else if (actualIntent === 'paid') {
+          successTitle.innerText = "Founder Spot Provisioned!";
+          successMessage.innerHTML = `Founder Spot Provisioned! You are Founder <span style="color: var(--red); font-weight: bold;">#${exactCount}</span> of 20!`;
+        } else {
+          successTitle.innerText = "Backup Spot Saved!";
+          successMessage.innerText = "All Founder spots are filled. You have been added to the Paid Backup Waitlist.";
+        }
+
+        successState.classList.add('active');
+
+        triggerConfetti();
+      } catch (err) {
+        console.error('Error adding to waitlist from modal: ', err);
+        submitBtn.innerText = 'Error';
+        setTimeout(() => {
+          submitBtn.disabled = false;
+          submitBtn.innerText = originalBtnText;
+        }, 2000);
+      } finally {
+        if (!document.getElementById('modal-success-state').classList.contains('active')) {
+          submitBtn.disabled = false;
+          submitBtn.innerText = originalBtnText;
+        }
+      }
+    });
+
+    // Landing Page Hero/Footer Intent Selection Modal Operations
+    let currentIntentContext = null;
+
+    window.openIntentModal = function() {
+      const modal = document.getElementById('intent-modal');
+      modal.classList.add('active');
+      
+      const btnFree = document.getElementById('intent-btn-free');
+      const btnPaid = document.getElementById('intent-btn-paid');
+      btnFree.disabled = false;
+      btnPaid.disabled = false;
+      btnFree.innerText = "Join the Free Waitlist";
+
+      // Reset error state
+      const intentError = document.getElementById('intent-error-message');
+      if (intentError) {
+        intentError.style.display = 'none';
+      }
+      
+      if (activePaidCount < 20) {
+        if (activePaidCount === 0) {
+          btnPaid.innerText = "Claim 1 of 20 Founder Spots";
+        } else {
+          btnPaid.innerText = `Only ${20 - activePaidCount} Founder Spots Left`;
+        }
+      } else {
+        btnPaid.innerText = "20 Founder Spots Filled! Join Backup List";
+      }
+    };
+
+    window.closeIntentModal = function() {
+      const modal = document.getElementById('intent-modal');
+      modal.classList.remove('active');
+    };
+
+    document.getElementById('intent-modal-close-btn').addEventListener('click', window.closeIntentModal);
+    document.getElementById('intent-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('intent-modal')) {
+        window.closeIntentModal();
+      }
+    });
+
+    async function submitIntentSelection(planIntent) {
+      if (!currentIntentContext || !currentIntentContext.email) return;
+
+      const btnFree = document.getElementById('intent-btn-free');
+      const btnPaid = document.getElementById('intent-btn-paid');
+      const clickedBtn = planIntent === 'free' ? btnFree : btnPaid;
+      const originalClickedText = clickedBtn.innerText;
+
+      btnFree.disabled = true;
+      btnPaid.disabled = true;
+
+      // Reset intent-modal error state on click
+      const intentError = document.getElementById('intent-error-message');
+      if (intentError) {
+        intentError.style.display = 'none';
+      }
+
+      try {
+        // Step 1: Instantly show Checking availability...
+        clickedBtn.innerText = "🔍 Checking availability...";
+
+        // Check duplicate globally across all three collections
+        const duplicate = await isDuplicateEmailGlobal(currentIntentContext.email);
+        if (duplicate) {
+          if (intentError) {
+            intentError.querySelector('.error-text').innerText = "This email is already registered on a waitlist!";
+            intentError.style.display = 'flex';
+          }
+          clickedBtn.innerText = originalClickedText;
+          return;
+        }
+
+        // Step 2: Instantly show Securing your spot... when actual write starts
+        clickedBtn.innerText = "⚡ Securing your spot...";
+
+        // Dynamically resolve target intent based on cap state
+        let actualIntent = planIntent;
+        let targetCollection = 'waitlist_free';
+
+        if (actualIntent === 'free') {
+          targetCollection = 'waitlist_free';
+        } else if (actualIntent === 'paid') {
+          if (activePaidCount < 20) {
+            targetCollection = 'waitlist_paid';
+          } else {
+            actualIntent = 'paid_backup';
+            targetCollection = 'waitlist_paid_backup';
+          }
+        } else {
+          actualIntent = 'paid_backup';
+          targetCollection = 'waitlist_paid_backup';
+        }
+
+        const payload = {
+          email: currentIntentContext.email,
+          planIntent: actualIntent
+        };
+
+        try {
+          await addDoc(collection(db, targetCollection), payload);
+        } catch (dbErr) {
+          handleFirestoreError(dbErr, 'CREATE', targetCollection);
+        }
+
+        // Local state increment
+        if (actualIntent === 'free') {
+          activeFreeCount += 1;
+          currentGlobalCount += 1;
+        } else if (actualIntent === 'paid') {
+          activePaidCount += 1;
+          currentGlobalCount += 1;
+        } else {
+          currentGlobalCount += 1;
+        }
+
+        const exactCount = actualIntent === 'free' ? activeFreeCount : activePaidCount;
+
+        // Instantly update the counts in UI without fetching from server
+        updateWaitlistCountsUI();
+
+        window.closeIntentModal();
+
+        const successCard = document.getElementById(currentIntentContext.successId);
+        const titleEl = successCard.querySelector('.success-title');
+        const descEl = successCard.querySelector('.success-desc');
+
+        if (actualIntent === 'paid') {
+          if (titleEl) {
+            titleEl.innerHTML = `Founder Spot Provisioned!<br>You are Founder <span style="color: var(--red); font-weight: bold;">#${exactCount}</span> of 20!`;
+          }
+          if (descEl) {
+            descEl.innerText = "Your Founder Spot has been provisioned! We will contact you with early access instructions very soon.";
+          }
+        } else if (actualIntent === 'free') {
+          if (titleEl) {
+            titleEl.innerHTML = `Welcome to the Waitlist!<br>You are <span style="color: var(--red); font-weight: bold;">#${exactCount}</span> on our early waitlist!`;
+          }
+          if (descEl) {
+            descEl.innerText = "You've successfully reserved your free spot! We will contact you with early access instructions very soon.";
+          }
+        } else {
+          if (titleEl) {
+            titleEl.innerText = "Backup Spot Saved!";
+          }
+          if (descEl) {
+            descEl.innerText = "All Founder spots are filled. You've been successfully added to our Paid Backup Waitlist!";
+          }
+        }
+
+        document.getElementById(currentIntentContext.formId).style.display = 'none';
+        document.getElementById(currentIntentContext.countId).style.display = 'none';
+
+        successCard.classList.add('active');
+
+        triggerConfetti();
+
+      } catch (err) {
+        console.error('Error submitting intent choice: ', err);
+        clickedBtn.innerText = "Error";
+        setTimeout(() => {
+          clickedBtn.innerText = originalClickedText;
+        }, 2000);
+      } finally {
+        btnFree.disabled = false;
+        btnPaid.disabled = false;
+      }
+    }
+
+    document.getElementById('intent-btn-free').addEventListener('click', () => submitIntentSelection('free'));
+    document.getElementById('intent-btn-paid').addEventListener('click', () => submitIntentSelection('paid'));
+
+    function handleWaitlistSubmit(e, emailInputId, formId, countId, successId, posClass) {
+      e.preventDefault();
+      const emailField = document.getElementById(emailInputId);
+      const email = emailField.value.trim();
+      const btn = e.target.querySelector('button');
+      
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!email || !emailRegex.test(email)) {
+        emailField.style.outline = '2px solid #FF5A00';
+        emailField.addEventListener('input', () => {
+          emailField.style.outline = 'none';
+        }, { once: true });
+        return;
+      }
+
+      emailField.style.outline = 'none';
+
+      currentIntentContext = {
+        email: email,
+        formId: formId,
+        countId: countId,
+        successId: successId,
+        posClass: posClass,
+        btn: btn,
+        btnOriginalText: btn.innerText
+      };
+
+      window.openIntentModal();
+    }
+
+    document.getElementById('form-hero').addEventListener('submit', (e) => handleWaitlistSubmit(e, 'email-hero', 'form-hero', 'count-hero', 'success-hero', 'ui-pos-hero'));
+    document.getElementById('form-footer').addEventListener('submit', (e) => handleWaitlistSubmit(e, 'email-footer', 'form-footer', 'count-footer', 'success-footer', 'ui-pos-footer'));
+
+  </script>
+</body>
+</html>
+

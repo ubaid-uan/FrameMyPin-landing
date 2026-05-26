@@ -1,0 +1,38 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    function isValidWaitlistEntry(data) {
+      return (
+        data.keys().hasAll(['email', 'planIntent']) && 
+        data.keys().size() == 2 && 
+        data.email is string &&
+        data.email.size() <= 200 &&
+        data.planIntent is string && 
+        (data.planIntent == 'free' || data.planIntent == 'paid' || data.planIntent == 'paid_backup')
+      );
+    }
+
+    match /waitlist_free/{entryId} {
+      allow create: if isValidWaitlistEntry(request.resource.data);
+      allow list: if true;
+      allow get, update, delete: if false;
+    }
+
+    match /waitlist_paid/{entryId} {
+      allow create: if isValidWaitlistEntry(request.resource.data);
+      allow list: if true;
+      allow get, update, delete: if false;
+    }
+
+    match /waitlist_paid_backup/{entryId} {
+      allow create: if isValidWaitlistEntry(request.resource.data);
+      allow list: if true;
+      allow get, update, delete: if false;
+    }
+  }
+}
