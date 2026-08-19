@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { PinCardsScene } from './components/PinCardsScene';
+import { Analytics } from '@vercel/analytics/react';
 
 // ----------------------------------------------------------------------
 // REUSABLE COMPONENTS
@@ -557,6 +558,7 @@ export default function App() {
         </div>
       </div>
 
+      <Analytics />
     </div>
   );
 }
